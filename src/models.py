@@ -1,6 +1,11 @@
 # models.py
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import (
+    mean_absolute_error, mean_squared_error, r2_score,
+    accuracy_score, f1_score, classification_report, ConfusionMatrixDisplay,
+)
 
 class AirBNBModel(object):
     """
@@ -8,6 +13,7 @@ class AirBNBModel(object):
     """
     def __init__(self):
         self.model = None
+        self.random_state = random_state
 
     def load_data(self, filename: str, exclude_cols=None, category_cols=None, price_cols=None):
         """
@@ -20,19 +26,19 @@ class AirBNBModel(object):
         categorical_cols: list, defaults to None, takes list of strings of 
         columns to numerically encode.
         """
-        airbnb_df = pd.read_csv(filename, low_memory=False)
+        df = pd.read_csv(filename, low_memory=False)
         if exclude_cols:
-            airbnb_df.drop(columns=exclude_cols, axis=1, inplace=True)
+            df.drop(columns=exclude_cols, axis=1, inplace=True)
 
         # drop na values
-        airbnb_df.dropna(inplace=True)
-        airbnb_df.reset_index(drop=True, inplace=True)
-        airbnb_df = self.clean_df(airbnb_df, price_cols=price_cols)
+        df.dropna(inplace=True)
+        df.reset_index(drop=True, inplace=True)
+        df = self.clean_df(df, price_cols=price_cols)
 
         if category_cols:
-            airbnb_df = self.encode_categorical(airbnb_df, category_cols=category_cols)
+            df = self.encode_categorical(df, category_cols=category_cols)
 
-        return airbnb_df
+        return df
     
     def clean_df(self, df, price_cols=None):
         """
@@ -73,13 +79,33 @@ class AirBNBModel(object):
 
         return df
     
-    def train_model(self):
-        pass
-    
-    def evaluate(self, model):
-        pass
+    def run_regression(self, df, y_col: str, test_size=0.2):
+        """
+        Fit, train & evaluate regression models.
+        """
+        df_X = df.drop(columns=y_col)
+        df_y = df[y_col]
 
-class LinearRegressionModel(AirBNBModel):
-    def __init__(self):
-        super().__init__()
-        self.model = LinearRegression()
+        X_train, y_train, X_test, y_test = train_test_split(df_X, df_y, test_size=test_size, random_state=self.random_state)
+
+        candidates = {
+            "Linear Regression" : LinearRegression(),
+        }
+
+        fitted = {}
+        print("REGRESSION (target: total minutes)")
+
+        for name, model in candidates.items():
+            model.fit(X_train, y_train)
+            preds = model.predict(X_test)
+            mae = mean_absolute_error(y_test, preds)
+            rmse = mean_squared_error(y_test, preds) ** 0.5
+            r2 = r2_score(y_test, preds)
+            print(f"\n{name}")
+            print(f"MAE (mean absolute error): {mae:.1f} min")
+            print(f"RMSE (root mean squre error): {rmse:.1f} min")
+            print(f"R^2: {r2:.4f}")
+            fitted[name] = (model, preds)
+
+        return fitted
+
