@@ -11,7 +11,7 @@ class AirBNBModel(object):
     """
     Template class for all models. 
     """
-    def __init__(self):
+    def __init__(self, random_state=42):
         self.model = None
         self.random_state = random_state
 
