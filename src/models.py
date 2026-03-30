@@ -1,10 +1,13 @@
 # models.py
 import pandas as pd
+from sklearn.linear_model import LinearRegression
 
-
-class AirBNBModel:
-    def __init__(self, model):
-        self.model = model
+class AirBNBModel(object):
+    """
+    Template class for all models. 
+    """
+    def __init__(self):
+        self.model = None
 
     def clean_df(self, df):
         """
@@ -50,3 +53,22 @@ class AirBNBModel:
         airbnb_df = self.clean_df(airbnb_df)
 
         return airbnb_df
+    
+    def encode_categorical(self, df, category_cols: list):
+        """
+        Handle our categorical columns, encode them
+        numerically to be understood by the model
+        """
+        for col in category_cols:
+            vals = list(df[col].str.strip().unique())
+            nums = [i for i, val in enumerate(vals)]
+            mapping = dict(zip(vals, nums))
+            df[col] = df[col].str.strip().map(mapping)
+
+        return df
+    
+    def train_model(self):
+        pass
+    
+    def evaluate(self, model):
+        pass
