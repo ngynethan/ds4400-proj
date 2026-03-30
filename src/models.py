@@ -1,11 +1,40 @@
 # models.py
 import pandas as pd
+from sklearn.linear_model import LinearRegression
 
+class AirBNBModel(object):
+    """
+    Template class for all models. 
+    """
+    def __init__(self):
+        self.model = None
 
-class AirBNBModel:
-    def __init__(self, model):
-        self.model = model
+    def load_data(self, filename: str, exclude_cols=None, category_cols=None):
+        """
+        Load data from file in directory. Optional parameter to exclude 
+        columns from your data (particularly built for handling text data).
+        
+        filename: str, file directory path
+        exclude_cols: list, defaulted to None, takes list of strings of columns 
+        to not include in final output.
+        categorical_cols: list, defaults to None, takes list of strings of 
+        columns to numerically encode.
+        """
+        airbnb_df = pd.read_csv(filename, low_memory=False)
+        if exclude_cols:
+            airbnb_df.drop(columns=exclude_cols, axis=1, inplace=True)
 
+        # drop na values
+        airbnb_df.dropna(inplace=True)
+        airbnb_df = self.clean_df(airbnb_df)
+
+        if category_cols:
+            airbnb_df = self.encode_categorical(airbnb_df, category_cols=category_cols)
+
+        airbnb_df.reset_index(drop=True, inplace=True)
+
+        return airbnb_df
+    
     def clean_df(self, df):
         """
         Cleaning df header names to follow same 
@@ -26,27 +55,40 @@ class AirBNBModel:
         df['service_fee'] = df['service_fee'].str.strip().str.replace('$', '', regex=False
                                                         ).str.replace(',', '', regex=False
                                                         ).astype(float)
-            
-        return df
-
-    def load_data(self, filename: str, exclude_cols=None):
-        """
-        Load data from file in directory. Optional
-        parameter to exclude columns from your data 
-        (particularly built for handling text data).
         
-        filename: str, file directory path
-        exclude_cols: list, defaulted to none, takes
-        list of strings of columns to not include in
-        final output.
+        # handle date
+        df['last_review'] = pd.to_datetime(df['last_review'])
+        df['days_since_last_review'] = (df['last_review'].max() - df['last_review']).dt.days
+        df.drop(columns=['last_review'], inplace=True)
+                    
+        return df
+    
+    def encode_categorical(self, df, category_cols: list):
         """
-        airbnb_df = pd.read_csv(filename, low_memory=False)
-        if exclude_cols:
-            airbnb_df.drop(columns=exclude_cols, axis=1, inplace=True)
+        Handle our categorical columns, encode them
+        numerically to be understood by the model
+        """
+        for col in category_cols:
+            if type(df[col].iloc[0]) is bool:
+                df[col] = df[col].astype(int)
+            elif type(df[col].iloc[0]) is str:
+                vals = list(df[col].str.strip().unique())
+                nums = [i for i, val in enumerate(vals)]
+                mapping = dict(zip(vals, nums))
+                df[col] = df[col].str.strip().map(mapping)
 
-        # drop na values
-        airbnb_df.dropna(inplace=True)
+            else:
+                print(f"Column {col} dtype incompatible; is it really categorical?")
 
-        airbnb_df = self.clean_df(airbnb_df)
+        return df
+    
+    def train_model(self):
+        pass
+    
+    def evaluate(self, model):
+        pass
 
-        return airbnb_df
+class LinearRegressionModel(AirBNBModel):
+    def __init__(self):
+        super().__init__()
+        self.model = LinearRegression()

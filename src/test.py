@@ -1,9 +1,8 @@
 # test.py
-from models import AirBNBModel
-from sklearn.linear_model import LinearRegression
+from models import LinearRegressionModel
 
 def main():
-    model = AirBNBModel(LinearRegression)
+    model = LinearRegressionModel()
 
     # ditch irrelevant textual data and locations
     exclude_cols = [
@@ -12,9 +11,18 @@ def main():
         "lat", "long", "country", "country code", 
         "house_rules", "license"
     ]
-    df = model.load_data("data/airbnb.csv", exclude_cols=exclude_cols)
+    # define category cols
+    category_cols = [
+        "host_identity_verified", "instant_bookable", 
+        "cancellation_policy", "room_type",
+    ]
+
+    df = model.load_data(
+        "data/airbnb.csv", exclude_cols=exclude_cols, category_cols=category_cols
+    )
     print(df.head())
     print(df.shape)
+    print(df["instant_bookable"])
 
 if __name__ == "__main__":
     main()
