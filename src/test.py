@@ -22,8 +22,6 @@ def main():
         category_cols=category_cols, 
     )
 
-    
-
     airbnb_df.to_csv("CLEAN_DF.csv")
     
     model.run_regression(airbnb_df, "price")

@@ -3,11 +3,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-df = pd.read_csv("airbnb.csv")
+df = pd.read_csv("data/AB_NYC_2019.csv")
 
 # Clean price column
-df['price'] = df['price'].replace('[\$,]', '', regex=True).astype(float)
-df = df.dropna(subset=['price', 'room type'])
+# df['price'] = df['price'].replace('[\$,]', '', regex=True).astype(float)
+df = df.dropna(subset=['price', 'room_type'])
 
 # Get top 10 most frequent neighborhoods
 top_neighborhoods = df['neighbourhood'].value_counts().head(10).index
@@ -26,13 +26,15 @@ sns.barplot(x='price', y='neighbourhood', data=avg_price_neigh)
 plt.title("Average Price by Neighborhood (Top 10)")
 plt.xlabel("Average Price")
 plt.ylabel("Neighborhood")
+plt.savefig("viz/price_by_neigh.png")
 plt.show()
 
 # price by room type
 plt.figure()
-sns.boxplot(x='room type', y='price', data=df)
+sns.boxplot(x='room_type', y='price', data=df)
 plt.title("Price Distribution by Room Type")
 plt.xlabel("Room Type")
 plt.ylabel("Price")
 plt.xticks(rotation=30)
+plt.savefig("viz/price_by_room")
 plt.show()
