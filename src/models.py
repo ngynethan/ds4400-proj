@@ -9,7 +9,7 @@ class AirBNBModel(object):
     def __init__(self):
         self.model = None
 
-    def load_data(self, filename: str, exclude_cols=None, category_cols=None):
+    def load_data(self, filename: str, exclude_cols=None, category_cols=None, price_cols=None):
         """
         Load data from file in directory. Optional parameter to exclude 
         columns from your data (particularly built for handling text data).
@@ -26,16 +26,15 @@ class AirBNBModel(object):
 
         # drop na values
         airbnb_df.dropna(inplace=True)
-        airbnb_df = self.clean_df(airbnb_df)
+        airbnb_df.reset_index(drop=True, inplace=True)
+        airbnb_df = self.clean_df(airbnb_df, price_cols=price_cols)
 
         if category_cols:
             airbnb_df = self.encode_categorical(airbnb_df, category_cols=category_cols)
 
-        airbnb_df.reset_index(drop=True, inplace=True)
-
         return airbnb_df
     
-    def clean_df(self, df):
+    def clean_df(self, df, price_cols=None):
         """
         Cleaning df header names to follow same 
         conventions, handling mixed dtypes in cols.
@@ -49,18 +48,10 @@ class AirBNBModel(object):
         df.rename(columns=update_mapping, inplace=True)
 
         # handle price tags
-        df['price'] = df['price'].str.strip().str.replace('$', '', regex=False
-                                            ).str.replace(',', '', regex=False
-                                            ).astype(float)
-        df['service_fee'] = df['service_fee'].str.strip().str.replace('$', '', regex=False
-                                                        ).str.replace(',', '', regex=False
-                                                        ).astype(float)
-        
-        # handle date
-        df['last_review'] = pd.to_datetime(df['last_review'])
-        df['days_since_last_review'] = (df['last_review'].max() - df['last_review']).dt.days
-        df.drop(columns=['last_review'], inplace=True)
-                    
+        if price_cols:
+            for col in price_cols:
+                df[col] = df[col].str.strip().str.replace('$', '', regex=False
+                                ).str.replace(',', '', regex=False).astype(float)
         return df
     
     def encode_categorical(self, df, category_cols: list):
