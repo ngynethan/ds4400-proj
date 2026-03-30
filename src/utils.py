@@ -1,7 +1,7 @@
 # utils.py
 import pandas as pd
 
-def load_data(filename: str, exclude_cols=None, category_cols=None, price_cols=None):
+def load_data(filename: str, exclude_cols=None, category_cols=None, price_cols=None, bool_cols=None):
     """
     Load data from file in directory. Optional parameter to exclude 
     columns from your data (particularly built for handling text data).
@@ -18,18 +18,17 @@ def load_data(filename: str, exclude_cols=None, category_cols=None, price_cols=N
 
     # drop na values
     df.dropna(inplace=True)
-    df.reset_index(drop=True, inplace=True)
-    df = clean_df(df, price_cols=price_cols)
-    print(df.dtypes)
+    df = clean_df(df, price_cols=price_cols, bool_cols=bool_cols)
 
     if category_cols:
         df = encode_categorical(df, category_cols=category_cols)
 
-    print(df.dtypes.value_counts())
+    df.reset_index(drop=True, inplace=True)
 
     return df
 
-def clean_df(df, price_cols=None):
+
+def clean_df(df, price_cols=None, bool_cols=None):
     """
     Cleaning df header names to follow same 
     conventions, handling mixed dtypes in cols.
@@ -40,9 +39,6 @@ def clean_df(df, price_cols=None):
         update_mapping.update({
             col: col.lower().replace(" ", "_")
         })
-        if col not in price_cols and df[col].dtype == object:
-            df[col] = df[col].astype(str)
-
     df.rename(columns=update_mapping, inplace=True)
 
     # handle price columns
@@ -55,6 +51,22 @@ def clean_df(df, price_cols=None):
                 .astype(float)
             )
 
+    if bool_cols:
+        df = str_to_bool(df, bool_cols)
+
+    return df
+
+def str_to_bool(df, bool_cols):
+    """ 
+    Takes a mapping of {col: list} where index 0 is the 
+    label corresponding with binary value 0.
+    """
+    for col, lst in bool_cols.items():
+        df[col] = df[col].astype(str).str.strip().map({
+            lst[0]: 0,
+            lst[1]: 1
+        })
+
     return df
 
 def encode_categorical(df, category_cols: list):
@@ -63,19 +75,11 @@ def encode_categorical(df, category_cols: list):
     numerically to be understood by the model
     """
     for col in category_cols:
-        if type(df[col].iloc[0]) is bool:
-            df[col] = df[col].astype(int)
-        elif type(df[col].iloc[0]) is str:
-            vals = list(df[col].str.strip().unique())
-            nums = [i for i, val in enumerate(vals)]
-            mapping = dict(zip(vals, nums))
-            df[col] = df[col].str.strip().map(mapping)
-            df[col] = df[col].astype(int)
-            print("CATEGORY COL: ", col)
-            print(df[col].unique())
-
-        else:
-            print(f"Column {col} dtype incompatible; is it really categorical?")
+        vals = list(df[col].str.strip().unique())
+        nums = [i for i, val in enumerate(vals)]
+        mapping = dict(zip(vals, nums))
+        df[col] = df[col].str.strip().map(mapping)
+        df[col] = df[col].astype(int)
 
     return df
 
