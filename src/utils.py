@@ -1,5 +1,6 @@
 # utils.py
 import pandas as pd
+import numpy as np
 
 def load_data(filename: str, exclude_cols=None, category_cols=None, price_cols=None, bool_cols=None):
     """
@@ -19,6 +20,10 @@ def load_data(filename: str, exclude_cols=None, category_cols=None, price_cols=N
     # drop na values
     df.dropna(inplace=True)
     df = clean_df(df, price_cols=price_cols, bool_cols=bool_cols)
+
+    # eliminate outliers, log transform price
+    df = df[(df['price'] > 0) & (df['price'] < df['price'].quantile(0.99))]
+    df['price'] = np.log1p(df['price'])
 
     if category_cols:
         df = encode_categorical(df, category_cols=category_cols)
