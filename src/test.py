@@ -1,31 +1,32 @@
 # test.py
-from models import LinearRegressionModel
+from models import AirBNBModel
+from utils import load_data
+import numpy as np
 
 def main():
-    model = LinearRegressionModel()
+    model = AirBNBModel()
 
-    # ditch irrelevant textual data and locations
+    # ditch irrelevant textual data
     exclude_cols = [
-        "id", "NAME", "host id", "host name", 
-        "neighbourhood group", "neighbourhood", 
-        "lat", "long", "country", "country code", 
-        "house_rules", "license", "last review"
+        "id", "name", "host_id", "host_name", "last_review"
     ]
     # define category cols
     category_cols = [
-        "host_identity_verified", "instant_bookable", 
-        "cancellation_policy", "room_type",
+        "room_type", 
+        "neighbourhood_group", "neighbourhood"
     ]
-    # price cols
-    price_cols = ["price", "service_fee"]
 
-    df = model.load_data(
-        "data/airbnb.csv", exclude_cols=exclude_cols, 
-        category_cols=category_cols, price_cols=price_cols
+    airbnb_df = load_data(
+        "data/AB_NYC_2019.csv", 
+        exclude_cols=exclude_cols, 
+        category_cols=category_cols, 
     )
-    print(df.head())
-    print(df.shape)
-    print(df["instant_bookable"])
+
+    
+
+    airbnb_df.to_csv("CLEAN_DF.csv")
+    
+    model.run_regression(airbnb_df, "price")
 
 if __name__ == "__main__":
     main()
