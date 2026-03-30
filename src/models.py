@@ -1,10 +1,12 @@
 # models.py
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     mean_absolute_error, mean_squared_error, r2_score,
-    accuracy_score, f1_score, classification_report, ConfusionMatrixDisplay,
 )
+from sklearn.preprocessing import StandardScaler
+import numpy as np
+
 
 class AirBNBModel(object):
     """
@@ -13,6 +15,14 @@ class AirBNBModel(object):
     def __init__(self, random_state=42):
         self.model = None
         self.random_state = random_state
+        self.scaler = StandardScaler()
+
+    def scale_data(self, X_train, X_test, y_train, y_test):
+        """ Standard scale X, log transform y """
+        X_train_scaled = self.scaler.fit_transform(X_train)
+        X_test_scaled = self.scaler.transform(X_test)
+        
+        return X_train_scaled, X_test_scaled
 
     def run_regression(self, df, y_col: str, test_size=0.2):
         """
@@ -23,6 +33,9 @@ class AirBNBModel(object):
 
         X_train, X_test, y_train, y_test = train_test_split(df_X, df_y, test_size=test_size, random_state=self.random_state)
 
+        # scale features and target to standard scale
+        X_train, X_test = self.scale_data(X_train, X_test, y_train, y_test)
+        
         candidates = {
             "Linear Regression" : LinearRegression(),
         }
@@ -43,4 +56,3 @@ class AirBNBModel(object):
             fitted[name] = (model, preds)
 
         return fitted
-
