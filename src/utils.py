@@ -26,7 +26,7 @@ def load_data(filename: str, exclude_cols=None, category_cols=None, price_cols=N
     df['price'] = np.log1p(df['price'])
 
     if category_cols:
-        df = encode_categorical(df, category_cols=category_cols)
+        df = one_hot_encode(df, category_cols=category_cols)
 
     df.reset_index(drop=True, inplace=True)
 

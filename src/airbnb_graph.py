@@ -21,13 +21,13 @@ avg_price_neigh = df_top.groupby('neighbourhood')['price'].mean().reset_index()
 avg_price_neigh = avg_price_neigh.sort_values(by='price', ascending=False)
 
 # price by neighborhood
-plt.figure(figsize=(10,6))
+plt.figure(figsize=(10,6), dpi=200)
 sns.barplot(x='price', y='neighbourhood', data=avg_price_neigh)
 plt.title("Average Price by Neighborhood (Top 10)")
 plt.xlabel("Average Price")
 plt.ylabel("Neighborhood")
+plt.tight_layout()
 plt.savefig("viz/price_by_neigh.png")
-plt.show()
 
 # price by room type
 plt.figure()
@@ -36,5 +36,5 @@ plt.title("Price Distribution by Room Type")
 plt.xlabel("Room Type")
 plt.ylabel("Price")
 plt.xticks(rotation=30)
+plt.tight_layout()
 plt.savefig("viz/price_by_room")
-plt.show()
