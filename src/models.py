@@ -1,5 +1,7 @@
 # models.py
+
 from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     mean_absolute_error, mean_squared_error, r2_score,
@@ -43,7 +45,7 @@ class AirBNBModel(object):
         }
 
         fitted = {}
-        print("REGRESSION (target: price)")
+        print("\nREGRESSION (target: price)")
 
         for name, model in candidates.items():
             model.fit(X_train, y_train)
@@ -59,7 +61,7 @@ class AirBNBModel(object):
 
         return fitted
     
-    def run_classification(self, df, y_col: str, test_size=0.2):
+    def run_classification(self, df, y_col: str, test_size=0.2, **kwargs):
         """
         Fit, train & evaluate classification models.
         """
@@ -71,8 +73,8 @@ class AirBNBModel(object):
             df_y,
             bins=[0, 100, 200, 400, np.inf],
             labels=['budget', 'mid', 'upper', 'luxury'], 
-            log_transform=True)
-        
+            log_transform=True
+        )
 
         X_train, X_test, y_train, y_test = train_test_split(df_X, df_y, test_size=test_size, random_state=self.random_state)
 
@@ -80,8 +82,21 @@ class AirBNBModel(object):
         X_train, X_test = self.scale_data(X_train, X_test, y_train, y_test)
 
         fitted = {}
+
+        print("\nCLASSIFICATION (target: price)")
+
+        # mlp hidden state dims
+        n_hid_neurons = kwargs.get("n_hid_neurons", 100)
+        n_hid_layers = kwargs.get("n_hid_layers", 2)
+        hidden_state = tuple([n_hid_neurons] * n_hid_layers)
+
         candidates = {
-            "Logistic Regression": LogisticRegression()
+            "Logistic Regression": LogisticRegression(),
+            "Multilayer Perceptron": MLPClassifier(
+                hidden_layer_sizes=hidden_state,
+                activation="relu",
+                solver="sgd"
+            ),
         }
 
         for name, model in candidates.items():

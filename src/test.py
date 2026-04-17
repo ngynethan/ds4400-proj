@@ -1,4 +1,5 @@
 # test.py
+
 from models import AirBNBModel
 from utils import load_data
 import numpy as np
@@ -14,12 +15,11 @@ def main():
     # define category cols
     category_cols = [
         "room_type", "neighbourhood",
-        "neighbourhood_group", "city"
+        "neighbourhood_group", 
     ]
 
     airbnb_df = load_data(
-        "data/AB_US_2023.csv", 
-        # "data/AB_NYC_2019.csv",
+        "data/AB_NYC_2019.csv",
         exclude_cols=exclude_cols, 
         category_cols=category_cols, 
     )
@@ -27,7 +27,7 @@ def main():
 
     airbnb_df.to_csv("data/CLEAN_DF.csv")
     
-    # model.run_regression(airbnb_df, "price")
+    model.run_regression(airbnb_df, "price")
 
     # run
     model.run_classification(airbnb_df, "price")
