@@ -89,8 +89,25 @@ def encode_categorical(df, category_cols: list):
     return df
 
 def one_hot_encode(df, category_cols: list):
-    for col in category_cols:
-        print("CATEGORY COL: ", col)
-        print(df[col].unique())
     df = pd.get_dummies(df, columns=category_cols, drop_first=True)
     return df
+
+def data_to_classes(df_col, bins:list, labels: list, log_transform=False):
+    """
+    Splits target col into class labels for classification 
+    tasks. Returns target col as classes.
+
+    log_transform optional param that will reverse log
+    transformation to original values
+    """
+    if log_transform:
+        df_col = np.expm1(df_col)
+        
+    df_col = pd.cut(df_col, bins=bins, labels=labels)
+
+    class_count = dict(df_col.value_counts())
+    print("\nClass Counts:")
+    for label in labels:
+        print(f"    {label}: {class_count[label]}")
+
+    return df_col, class_count
