@@ -2,6 +2,7 @@
 from models import AirBNBModel
 from utils import load_data
 import numpy as np
+from airbnb_graph import plot_price_distribution
 
 def main():
     model = AirBNBModel()
@@ -12,19 +13,24 @@ def main():
     ]
     # define category cols
     category_cols = [
-        "room_type", 
-        "neighbourhood_group", "neighbourhood"
+        "room_type", "neighbourhood",
+        "neighbourhood_group", "city"
     ]
 
     airbnb_df = load_data(
-        "data/AB_NYC_2019.csv", 
+        "data/AB_US_2023.csv", 
+        # "data/AB_NYC_2019.csv",
         exclude_cols=exclude_cols, 
         category_cols=category_cols, 
     )
+    plot_price_distribution(airbnb_df)
 
-    airbnb_df.to_csv("CLEAN_DF.csv")
+    airbnb_df.to_csv("data/CLEAN_DF.csv")
     
-    model.run_regression(airbnb_df, "price")
+    # model.run_regression(airbnb_df, "price")
+
+    # run
+    model.run_classification(airbnb_df, "price")
 
 if __name__ == "__main__":
     main()
