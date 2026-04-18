@@ -3,6 +3,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 
 
 def plot_price_by_neighborhood(data):
@@ -26,8 +27,8 @@ def plot_price_by_room(df):
 
 def plot_price_distribution(df):
     plt.figure(figsize=(10,6), dpi=200)
-    plt.hist(df["price"].clip(upper=2500), bins=60)
-    plt.title("NYC Airbnb Price Distribution")
+    plt.hist(np.expm1(df["price"].clip(upper=2500)), bins=60)
+    plt.title("NYC Airbnb Price Distribution (2019)")
     plt.xlabel("Price")
     plt.ylabel("Count")
     plt.tight_layout()
