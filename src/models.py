@@ -2,6 +2,7 @@
 
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.neural_network import MLPClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     mean_absolute_error, mean_squared_error, r2_score,
@@ -113,3 +114,52 @@ class AirBNBModel(object):
             fitted[name] = (model, preds)
 
         return fitted
+    
+    def run_ensemble(self, df, y_col: str, test_size=0.2, **kwargs):
+        """
+        Fit, train & evaluate ensemble models.
+        """
+        df_X = df.drop(columns=y_col)
+        df_y = df[y_col]
+
+        # split y_col into classes
+        df_y, class_count = utils.data_to_classes(
+            df_y,
+            bins=[0, 100, 200, 400, np.inf],
+            labels=['budget', 'mid', 'upper', 'luxury'], 
+            log_transform=True
+        )
+
+        X_train, X_test, y_train, y_test = train_test_split(df_X, df_y, test_size=test_size, random_state=self.random_state)
+
+        # scale features and target to standard scale
+        X_train, X_test = self.scale_data(X_train, X_test, y_train, y_test)
+
+        fitted = {}
+
+        print("\nENSEMBLE (target: price)")
+
+        # random forest dims
+        n_estimators = kwargs.get("n_estimators", 100)
+        max_depth = kwargs.get("max_depth", 5)
+
+        candidates = {
+            "Random Forest": RandomForestClassifier(
+                n_estimators=n_estimators, 
+                criterion="gini",
+                max_depth=max_depth
+            )
+        }
+
+        for name, model in candidates.items():
+            model.fit(X_train, y_train)
+            preds = model.predict(X_test)
+            acc = accuracy_score(y_test, preds)
+            f1_macro = f1_score(y_test, preds, average="macro", zero_division=0)
+            f1_wt = f1_score(y_test, preds, average="weighted", zero_division=0)
+            print(f"\n{name}")
+            print(f"Accuracy: {acc:.4f}")
+            print(f"F1 (macro): {f1_macro:.4f}")
+            print(f"F1 (wtd): {f1_wt:.4f}")
+            print(classification_report(y_test, preds, zero_division=0))
+            fitted[name] = (model, preds)

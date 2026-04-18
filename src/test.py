@@ -29,8 +29,9 @@ def main():
     
     model.run_regression(airbnb_df, "price")
 
-    # run
     model.run_classification(airbnb_df, "price")
+
+    model.run_ensemble(airbnb_df, "price", n_estimators=300, max_depth=5)
 
 if __name__ == "__main__":
     main()
