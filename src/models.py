@@ -86,17 +86,23 @@ class AirBNBModel(object):
 
         print("\nCLASSIFICATION (target: price)")
 
+        max_iter = kwargs.get("max_iter", 1000)
+
         # mlp hidden state dims
         n_hid_neurons = kwargs.get("n_hid_neurons", 100)
         n_hid_layers = kwargs.get("n_hid_layers", 2)
         hidden_state = tuple([n_hid_neurons] * n_hid_layers)
 
         candidates = {
-            "Logistic Regression": LogisticRegression(),
+            "Logistic Regression": LogisticRegression(
+                class_weight="balanced", 
+                max_iter=max_iter
+            ),
             "Multilayer Perceptron": MLPClassifier(
                 hidden_layer_sizes=hidden_state,
                 activation="relu",
-                solver="sgd"
+                solver="adam",
+                max_iter=max_iter
             ),
         }
 
@@ -147,7 +153,8 @@ class AirBNBModel(object):
             "Random Forest": RandomForestClassifier(
                 n_estimators=n_estimators, 
                 criterion="gini",
-                max_depth=max_depth
+                max_depth=max_depth,
+                class_weight="balanced"
             )
         }
 
